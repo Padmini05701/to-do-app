@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Smart Task Manager</title>
+
+<style>
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #89f7fe, #66a6ff);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  transition: 0.3s;
+}
+
+.container {
+  background: white;
+  padding: 25px;
+  border-radius: 20px;
+  width: 370px;
+  box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.top {
+  display: flex;
+  gap: 5px;
+}
+
+input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+button {
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.add {
+  background: #4CAF50;
+  color: white;
+}
+
+.add:hover {
+  transform: scale(1.05);
+}
+
+.dark-toggle {
+  margin-top: 10px;
+  width: 100%;
+  background: #333;
+  color: white;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin-top: 15px;
+}
+
+li {
+  background: #f5f5f5;
+  padding: 10px;
+  margin: 6px 0;
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: 0.2s;
+}
+
+li:hover {
+  transform: scale(1.02);
+}
+
+.completed {
+  text-decoration: line-through;
+  color: gray;
+}
+
+.actions button {
+  margin-left: 5px;
+}
+
+.edit {
+  background: orange;
+  color: white;
+}
+
+.delete {
+  background: red;
+  color: white;
+}
+
+/* DARK MODE */
+.dark body {
+  background: #121212;
+}
+
+.dark .container {
+  background: #1e1e1e;
+  color: white;
+}
+
+.dark li {
+  background: #333;
+}
+</style>
+</head>
+
+<body id="body">
+
+<div class="container" id="container">
+  <h2>🚀 Smart Task Manager</h2>
+
+  <div class="top">
+    <input type="text" id="taskInput" placeholder="Enter your task...">
+    <button class="add" onclick="addTask()">Add</button>
+  </div>
+
+  <button class="dark-toggle" onclick="toggleDark()">🌙 Dark Mode</button>
+
+  <ul id="taskList"></ul>
+</div>
+
+<script>
+let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+let isDark = JSON.parse(localStorage.getItem("darkMode")) || false;
+
+function saveTasks() {
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+}
+
+function saveDarkMode() {
+  localStorage.setItem("darkMode", JSON.stringify(isDark));
+}
+
+function renderTasks() {
+  let list = document.getElementById("taskList");
+  list.innerHTML = "";
+
+  tasks.forEach((task, index) => {
+    let li = document.createElement("li");
+
+    if (task.completed) li.classList.add("completed");
+
+    let span = document.createElement("span");
+    span.textContent = task.text;
+
+    span.onclick = () => {
+      task.completed = !task.completed;
+      saveTasks();
+      renderTasks();
+    };
+
+    let actions = document.createElement("div");
+
+    let editBtn = document.createElement("button");
+    editBtn.textContent = "✏️";
+    editBtn.className = "edit";
+
+    editBtn.onclick = () => {
+      let newText = prompt("Edit task:", task.text);
+      if (newText) {
+        task.text = newText;
+        saveTasks();
+        renderTasks();
+      }
+    };
+
+    let delBtn = document.createElement("button");
+    delBtn.textContent = "❌";
+    delBtn.className = "delete";
+
+    delBtn.onclick = () => {
+      tasks.splice(index, 1);
+      saveTasks();
+      renderTasks();
+    };
+
+    actions.appendChild(editBtn);
+    actions.appendChild(delBtn);
+
+    li.appendChild(span);
+    li.appendChild(actions);
+
+    list.appendChild(li);
+  });
+}
+
+function addTask() {
+  let input = document.getElementById("taskInput");
+  let text = input.value.trim();
+
+  if (text === "") {
+    alert("Please enter a task");
+    return;
+  }
+
+  tasks.push({ text: text, completed: false });
+  input.value = "";
+
+  saveTasks();
+  renderTasks();
+}
+
+function toggleDark() {
+  isDark = !isDark;
+  document.body.classList.toggle("dark");
+  saveDarkMode();
+}
+
+function loadDarkMode() {
+  if (isDark) {
+    document.body.classList.add("dark");
+  }
+}
+
+loadDarkMode();
+renderTasks();
+</script>
+
+</body>
+</html>
